@@ -1,32 +1,39 @@
 {
-  "manifest_version": 3,
-  "name": "Hide Letterboxd Ratings",
-  "version": "1.0",
-  "description": "Hides the rating curve and reviews on Letterboxd film pages to help avoid spoilers and expectations.",
-  "action": {
-    "default_title": "Hide Letterboxd Ratings",
-    "default_icon": {
-      "16": "images/icon_16.png",
-      "32": "images/icon_32.png",
-      "48": "images/icon_48.png",
-      "128": "images/icon_128.png"
+    "manifest_version": 3,
+    "name": "Hide Letterboxd Ratings",
+    "version": "1.0",
+    "description": "Hides the rating curve and reviews on Letterboxd film pages to help avoid spoilers and expectations.",
+    "action": {
+        "default_title": "Hide Letterboxd Ratings",
+        "default_icon": {
+            "16": "images/icon_16.png",
+            "32": "images/icon_32.png",
+            "48": "images/icon_48.png",
+            "128": "images/icon_128.png"
+        },
+        "default_popup": "popup/popup.html"
     },
-    "default_popup": "popup/popup.html"
-  },
-  "icons": {
-    "16": "images/icon_16.png",
-    "32": "images/icon_32.png",
-    "48": "images/icon_48.png",
-    "128": "images/icon_128.png"
-  },
-  "host_permissions": ["*://*.letterboxd.com/*"],
-  "permissions": ["storage", "activeTab", "scripting"],
-  "content_scripts": [
-    {
-      "matches": ["*://*.letterboxd.com/*"],
-      "js": ["content.js"],
-      "css": ["styles.css"],
-      "run_at": "document_end"
-    }
-  ]
+    "icons": {
+        "16": "images/icon_16.png",
+        "32": "images/icon_32.png",
+        "48": "images/icon_48.png",
+        "128": "images/icon_128.png"
+    },
+    "host_permissions": ["*://*.letterboxd.com/*"],
+    "permissions": ["storage", "activeTab", "scripting"],
+    "content_scripts": [
+        {
+            "matches": ["*://*.letterboxd.com/film/*"],
+            "exclude_globs": [
+                "*/film/*/members/*",
+                "*/film/*/fans/*",
+                "*/film/*/likes/*",
+                "*/film/*/reviews/*",
+                "*/film/*/lists/*"
+            ],
+            "js": ["content.js"],
+            "css": ["styles.css"],
+            "run_at": "document_end"
+        }
+    ]
 }

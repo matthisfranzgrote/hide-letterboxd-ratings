@@ -1,26 +1,12 @@
-const BLUR_CLASS = "obscure-blur";
-// TODO:
-// check for main film page
-// path includes: /film/
-// but not: /reviews or /lists
+const REVEAL_KEY = "reveal";
 
-async function runWhenPageReady() {
+async function initRatings() {
     if (document.querySelector(".rating-histogram")) {
-        // const isBlockingShorts = await currentBrowser.storage.local
-        //     .get("isActive")
-        //     .then((result) => {
-        //         return result.isActive ?? true;
-        //     });
+        if (hasWatchedFilm()) {
+            showRating(true);
+            return;
+        }
 
-        // if (isBlockingShorts) {
-        //     blockShorts();
-        // }
-        showRating(false);
-        showFriendsActivity(false);
-        showReviews(false);
-
-        // TODO: histogram may be loaded before recent reviews!
-        // setup mutation observer (histogram has highest prio since it is visible immediately without scrolling)
         const unhideButton = document.createElement("div");
         unhideButton.classList.add("unhide-button");
         unhideButton.innerText = "Reveal Ratings";
@@ -34,49 +20,106 @@ async function runWhenPageReady() {
             showReviews(true);
             showRevealButton(false);
         });
-
-        showRevealButton(true);
     } else {
-        setTimeout(runWhenPageReady, 50);
+        setTimeout(initRatings, 100);
     }
 }
-
 (async () => {
-    await runWhenPageReady();
+    await initRatings();
 })();
 
-function showRating(show) {
-    const hist = document.getElementsByClassName("rating-histogram")[0];
-    if (!hist) {
-        console.log("no hist");
+async function initReviews() {
+    const reviewsParent = document.querySelector(".film-recent-reviews");
+    if (reviewsParent) {
+        // for all already present .film-reviews sections, set visibility
+        showReviews(hasWatchedFilm());
+
+        // if there are some sections not yet loaded, attach observer
+        if (reviewsParent.querySelectorAll(".csi.loading-csi").length > 0) {
+            const observer = new MutationObserver(() => {
+                showReviews(hasWatchedFilm());
+            });
+            observer.observe(reviewsParent, { childList: true });
+        }
+    } else {
+        setTimeout(initReviews, 500);
+    }
+}
+(async () => {
+    await initReviews();
+})();
+
+// activity from friends may be empty for this film, which we can't really check, so simply retry a few times
+async function initFriendsActivity(retries) {
+    const friendsActivityList = document.querySelector(
+        ".activity-from-friends",
+    );
+    if (friendsActivityList) {
+        showFriendsActivity(hasWatchedFilm());
+    } else if (retries > 0) {
+        setTimeout(initFriendsActivity, 1000, retries - 1);
+    }
+}
+(async () => {
+    await initFriendsActivity(10);
+})();
+
+// Watched state may arrive later.
+// TODO: attach mutation observer to watched status
+async function initWatchedStateObserver() {
+    const watchButton = document.querySelector(".action.-watch");
+    if (!watchButton) {
+        setTimeout(initWatchedStateObserver, 500);
         return;
     }
 
-    const bars = hist.getElementsByClassName("column");
-    const avg = hist.getElementsByClassName("averagerating tooltip")[0];
+    function checkWatched() {
+        if (watchButton.classList.contains("-on")) {
+            showRating(true);
+            showFriendsActivity(true);
+            showReviews(true);
+            showRevealButton(false);
+        }
+    }
+    checkWatched();
+
+    const observer = new MutationObserver(checkWatched);
+    observer.observe(watchButton, { attributeFilter: ["class"] });
+}
+(async () => {
+    await initWatchedStateObserver();
+})();
+
+function reveal(element, show) {
+    if (show) {
+        element.dataset[REVEAL_KEY] = "";
+    } else {
+        delete element.dataset[REVEAL_KEY];
+    }
+}
+
+function hasWatchedFilm() {
+    const watchButton = document.querySelector(".action.-watch");
+    if (watchButton && watchButton.classList.contains("-on")) {
+        return true;
+    }
+
+    return false;
+}
+
+function showRating(show) {
+    const histChart = document.getElementsByClassName("rating-histogram")[0];
+    if (!histChart) return;
+
+    // bar values are overwritten by style
+    reveal(histChart, show);
+
+    const avg = histChart.getElementsByClassName("averagerating tooltip")[0];
+    if (!avg) return;
 
     if (show) {
-        // apply blur to histogram and set all bars to 0.5
-        hist.classList.remove(BLUR_CLASS);
-        // restore cached value
-        [...bars].forEach((bar) => {
-            bar.style.setProperty("--value", bar.dataset["cachedValue"] ?? "0");
-        });
-
-        // restore average rating
-        avg.innerText = avg.dataset["cachedAvg"] ?? "0.0";
+        avg.innerText = avg.dataset["cachedAvg"] ?? avg.innerText;
     } else {
-        hist.classList.add(BLUR_CLASS);
-        [...bars].forEach((bar) => {
-            if (!("cachedValue" in bar.dataset)) {
-                // parse original histogram bar value from style property
-                // and store for reversal when user wants to see histogram
-                bar.dataset["cachedValue"] =
-                    bar.style.getPropertyValue("--value");
-            }
-            bar.style.setProperty("--value", "0.5");
-        });
-
         // store and obscure average
         avg.dataset["cachedAvg"] = avg.innerText;
         avg.innerText = "3.0";
@@ -84,82 +127,22 @@ function showRating(show) {
 }
 
 function showFriendsActivity(show) {
-    // TODO: only blur out friends who actually watched (check for li nodes with .-rated pseudoclass)
-    // children of ul avatar-list (child of activity-from-friends)
-    // others may only have .-watchlisted
-
     const friendsActivityList = document.getElementsByClassName(
         "activity-from-friends",
     )[0];
     if (!friendsActivityList) return;
-    const friendsActivity =
-        friendsActivityList.getElementsByClassName("avatar-list")[0];
 
-    const friendsRatings =
-        friendsActivity.getElementsByClassName("rating -nano");
-
-    if (show) {
-        friendsActivity.classList.remove(BLUR_CLASS);
-
-        [...friendsRatings].forEach((el) => {
-            el.hidden = false;
-            // el.classList.remove("rated-0");
-            // el.classList.add(`rated-${el.dataset["cachedValue"] ?? "0"}`);
-        });
-    } else {
-        friendsActivity.classList.add(BLUR_CLASS);
-
-        [...friendsRatings].forEach((el) => {
-            el.hidden = true;
-            // if (!("cachedValue" in el.dataset)) {
-            //     // extract rating and store
-            //     const rating = el.className.substring(
-            //         el.className.lastIndexOf("-"),
-            //     );
-            //     el.dataset["cachedValue"] = rating;
-            // }
-
-            // el.classList.remove(`rated-${rating}`);
-            // el.classList.add("rated-0");
-        });
-    }
+    reveal(friendsActivityList, show);
 }
 
 function showReviews(show) {
-    // blur parent divs
     const reviewParents = document.getElementsByClassName("film-reviews");
-    [...reviewParents].forEach((el) => {
-        if (show) {
-            el.classList.remove(BLUR_CLASS);
-        } else {
-            el.classList.add(BLUR_CLASS);
-        }
-    });
 
-    // hide individual ratings
-    [...reviewParents].forEach((el) => {
-        const reviewStrips = el.getElementsByClassName(
-            "content-reactions-strip",
-        );
-        [...reviewStrips].forEach((strip) => {
-            if (show) {
-                strip.hidden = false;
-            } else {
-                strip.hidden = true;
-            }
-        });
-    });
-    // set given stars to 5/5
+    // ratings/like are hidden by style
+    [...reviewParents].forEach((el) => reveal(el, show));
 }
 
 function showRevealButton(show) {
     const unhideButton = document.querySelector(".unhide-button");
-
-    // place a reveal button on top of each of the above obscured elements
-    // i.e. play with z order on ratings curve etc.
-    if (show) {
-        unhideButton.hidden = false;
-    } else {
-        unhideButton.hidden = true;
-    }
+    if (unhideButton) unhideButton.hidden = !show;
 }

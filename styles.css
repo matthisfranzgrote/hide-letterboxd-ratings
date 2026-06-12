@@ -1,7 +1,22 @@
-.obscure-blur {
+.rating-histogram:not([data-reveal]),
+.film-reviews:not([data-reveal]) .viewing-list,
+.activity-from-friends:not([data-reveal]) .avatar-list {
     filter: blur(5px);
     /*opacity: 0.3;*/
     pointer-events: none;
+    transition-property: filter;
+    transition-duration: 2s;
+}
+
+/* Hide star ratings in reviews and friend activity */
+.film-reviews:not([data-reveal]) .content-reactions-strip.-viewing,
+.activity-from-friends:not([data-reveal]) [class*=" rated-"] {
+    display: none !important;
+}
+
+/* Overwrite histogram values */
+.rating-histogram:not([data-reveal]) .column {
+    --value: 0.5 !important;
 }
 
 .unhide-button {
