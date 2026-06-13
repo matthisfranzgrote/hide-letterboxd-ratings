@@ -35,5 +35,13 @@
             "css": ["styles.css"],
             "run_at": "document_end"
         }
-    ]
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "hide-letterboxed-ratings@matthisfranzgrote",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
+        }
+    }
 }
