@@ -7,22 +7,26 @@
         <link rel="stylesheet" href="popup.css" />
     </head>
     <body>
-        <div class="container">
-            <div class="toggle-container">
-                <span class="toggle-message">Always show</span>
-                <label class="switch">
-                    <input type="checkbox" id="global-toggle" />
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="toggle-container">
-                <span class="toggle-message">Always show when watched</span>
-                <label class="switch">
-                    <input type="checkbox" id="watched-toggle" />
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <script src="script.js"></script>
+        <ul>
+            <li>
+                <div class="toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="global-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-message">Hide ratings and reviews</span>
+                </div>
+            </li>
+            <li>
+                <div class="toggle-container" id="watched-container" inert>
+                    <label class="switch">
+                        <input type="checkbox" id="watched-toggle" />
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-message">Auto-reveal when watched</span>
+                </div>
+            </li>
+        </ul>
+        <script src="popup.js"></script>
     </body>
 </html>
