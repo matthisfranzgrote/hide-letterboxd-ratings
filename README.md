@@ -19,10 +19,10 @@ Avoid getting spoiled or setting expectations when looking at (unwatched) films.
 - Select the `manifest.json` file
 
 ### Permanent
-- Clone this repo and zip the contents or download the most recent release
+- Download the most recent release
 - Open `about:addons`
 - Click the `Gear Icon ⚙ > Install Add-on From File...`
-- Select the zip
+- Select the `.xpi` file
 
 ---
 ## Attribution
