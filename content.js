@@ -2,7 +2,8 @@ const REVEAL_KEY = "reveal";
 
 async function initRatings() {
     if (document.querySelector(".rating-histogram")) {
-        if (hasWatchedFilm()) {
+        // ratings are hidden by default (via css)
+        if (await shouldShowRatings()) {
             showRating(true);
             return;
         }
@@ -32,12 +33,13 @@ async function initReviews() {
     const reviewsParent = document.querySelector(".film-recent-reviews");
     if (reviewsParent) {
         // for all already present .film-reviews sections, set visibility
-        showReviews(hasWatchedFilm());
+        showReviews(await shouldShowRatings());
 
         // if there are some sections not yet loaded, attach observer
-        if (reviewsParent.querySelectorAll(".csi.loading-csi").length > 0) {
-            const observer = new MutationObserver(() => {
-                showReviews(hasWatchedFilm());
+        if (reviewsParent.querySelector(".csi.js-csi,.csi.loading-csi")) {
+            // attach observer to react to dynamically loaded review sections
+            const observer = new MutationObserver(async () => {
+                showReviews(await shouldShowRatings());
             });
             observer.observe(reviewsParent, { childList: true });
         }
@@ -55,7 +57,7 @@ async function initFriendsActivity(retries) {
         ".activity-from-friends",
     );
     if (friendsActivityList) {
-        showFriendsActivity(hasWatchedFilm());
+        showFriendsActivity(await shouldShowRatings());
     } else if (retries > 0) {
         setTimeout(initFriendsActivity, 1000, retries - 1);
     }
@@ -65,28 +67,38 @@ async function initFriendsActivity(retries) {
 })();
 
 // Watched state may arrive later.
-// TODO: attach mutation observer to watched status
 async function initWatchedStateObserver() {
+    // wait until watch button has loaded
     const watchButton = document.querySelector(".action.-watch");
     if (!watchButton) {
         setTimeout(initWatchedStateObserver, 500);
         return;
     }
 
-    function checkWatched() {
-        if (watchButton.classList.contains("-on")) {
-            showRating(true);
-            showFriendsActivity(true);
-            showReviews(true);
-            showRevealButton(false);
-        }
+    // if already on, show all and finish
+    // note initWatchedStateObserver is only called if auto-reveal is active
+    if (watchButton.classList.contains("-on")) {
+        showAll();
+        return;
     }
-    checkWatched();
 
-    const observer = new MutationObserver(checkWatched);
+    // if not already on, add mutation observer (state may be delivered later or clicked by the user)
+    const observer = new MutationObserver(() => {
+        if (watchButton.classList.contains("-on")) {
+            showAll();
+        }
+    });
     observer.observe(watchButton, { attributeFilter: ["class"] });
 }
 (async () => {
+    const showWhenWatched = await browser.storage.local
+        .get("watchedActive")
+        .then((result) => {
+            return result.watchedActive ?? true;
+        });
+    // if user did not configure to auto-reveal on watched, nothing more to do
+    if (!showWhenWatched) return;
+
     await initWatchedStateObserver();
 })();
 
@@ -96,6 +108,22 @@ function reveal(element, show) {
     } else {
         delete element.dataset[REVEAL_KEY];
     }
+}
+
+async function shouldShowRatings() {
+    const isActive = await browser.storage.local
+        .get("globalActive")
+        .then((result) => {
+            return result.globalActive ?? true;
+        });
+    if (!isActive) return true;
+
+    const showWhenWatched = await browser.storage.local
+        .get("watchedActive")
+        .then((result) => {
+            return result.watchedActive ?? true;
+        });
+    return showWhenWatched && hasWatchedFilm();
 }
 
 function hasWatchedFilm() {
@@ -145,4 +173,11 @@ function showReviews(show) {
 function showRevealButton(show) {
     const unhideButton = document.querySelector(".unhide-button");
     if (unhideButton) unhideButton.hidden = !show;
+}
+
+function showAll() {
+    showRating(true);
+    showFriendsActivity(true);
+    showReviews(true);
+    showRevealButton(false);
 }
