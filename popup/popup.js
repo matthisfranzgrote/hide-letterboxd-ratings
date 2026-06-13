@@ -47,7 +47,6 @@ function toggleIconColor(active) {
             },
         });
     } else {
-        // TODO: set alternative icon
         browser.action.setIcon({
             path: {
                 16: "../images/icon_16_gray.png",
