@@ -26,4 +26,4 @@ Avoid getting spoiled or setting expectations when looking at (unwatched) films.
 
 ---
 ## Attribution
-Icons from [Letterboxd-Ratings-Remover](Letterboxd-Ratings-Remover](https://github.com/GoodbyteCo/Letterboxd-Ratings-Remover).
+Icons from [Letterboxd-Ratings-Remover](https://github.com/GoodbyteCo/Letterboxd-Ratings-Remover).
