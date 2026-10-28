@@ -1,23 +1,23 @@
 {
     "manifest_version": 3,
     "name": "Hide Letterboxd Ratings",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Hides the rating curve and reviews on Letterboxd film pages to help avoid spoilers and expectations.",
     "action": {
         "default_title": "Hide Letterboxd Ratings",
         "default_icon": {
-            "16": "images/icon_16.png",
-            "32": "images/icon_32.png",
-            "48": "images/icon_48.png",
-            "128": "images/icon_128.png"
+            "16": "images/icon_16_blur.png",
+            "32": "images/icon_32_blur.png",
+            "48": "images/icon_48_blur.png",
+            "128": "images/icon_128_blur.png"
         },
         "default_popup": "popup/popup.html"
     },
     "icons": {
-        "16": "images/icon_16.png",
-        "32": "images/icon_32.png",
-        "48": "images/icon_48.png",
-        "128": "images/icon_128.png"
+        "16": "images/icon_16_blur.png",
+        "32": "images/icon_32_blur.png",
+        "48": "images/icon_48_blur.png",
+        "128": "images/icon_128_blur.png"
     },
     "host_permissions": ["*://*.letterboxd.com/*"],
     "permissions": ["storage", "activeTab", "scripting"],

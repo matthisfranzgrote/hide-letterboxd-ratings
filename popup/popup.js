@@ -37,7 +37,8 @@ document
 })();
 
 function toggleIconColor(active) {
-    if (active) {
+    // show blurred when active
+    if (!active) {
         browser.action.setIcon({
             path: {
                 16: "../images/icon_16.png",
@@ -49,10 +50,10 @@ function toggleIconColor(active) {
     } else {
         browser.action.setIcon({
             path: {
-                16: "../images/icon_16_gray.png",
-                32: "../images/icon_32_gray.png",
-                48: "../images/icon_48_gray.png",
-                128: "../images/icon_128_gray.png",
+                16: "../images/icon_16_blur.png",
+                32: "../images/icon_32_blur.png",
+                48: "../images/icon_48_blur.png",
+                128: "../images/icon_128_blur.png",
             },
         });
     }
