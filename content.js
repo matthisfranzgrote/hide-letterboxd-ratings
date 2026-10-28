@@ -127,8 +127,8 @@ async function shouldShowRatings() {
 }
 
 function hasWatchedFilm() {
-    const watchButton = document.querySelector(".action.-watch");
-    if (watchButton && watchButton.classList.contains("-on")) {
+    const watchButton = document.querySelector("[data-is-watched]");
+    if (watchButton && watchButton.dataset["isWatched"] === "true") {
         return true;
     }
 
